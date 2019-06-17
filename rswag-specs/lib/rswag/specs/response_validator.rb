@@ -16,7 +16,7 @@ module Rswag
 
         validate_code!(metadata, response)
         validate_headers!(metadata, response.headers)
-        validate_body!(metadata, swagger_doc, response.body)
+        validate_body!(metadata, swagger_doc, response)
       end
 
       private
@@ -37,15 +37,17 @@ module Rswag
         end
       end
 
-      def validate_body!(metadata, swagger_doc, body)
+      def validate_body!(metadata, swagger_doc, response)
         response_schema = metadata[:response][:schema]
         return if response_schema.nil?
 
         validation_schema = response_schema
           .merge('$schema' => 'http://tempuri.org/rswag/specs/extended_schema')
           .merge(swagger_doc.slice(:definitions))
-        errors = JSON::Validator.fully_validate(validation_schema, body)
-        raise UnexpectedResponse, "Expected response body to match schema: #{errors[0]}" if errors.any?
+        errors = JSON::Validator.fully_validate(validation_schema, response.body)
+        raise UnexpectedResponse, 
+              "Expected response body to match schema: #{errors[0]}\n" \
+              "Response body: #{response.body}" if errors.any?
       end
     end
 
