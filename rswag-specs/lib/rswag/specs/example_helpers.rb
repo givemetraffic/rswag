@@ -19,7 +19,7 @@ module Rswag
           send(
             request[:verb],
             request[:path],
-            {
+            **{
               params: request[:payload],
               headers: request[:headers]
             }
